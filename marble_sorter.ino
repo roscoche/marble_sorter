@@ -76,10 +76,6 @@ unsigned long R,G,B;
 String rgbstring;
 int counters[]={0,0,0,0,0,0,0,0,0};
 int sorted=0;
-/*
-class Color{
-  public
-}*/
 
 void setup() { 
   Serial.begin(57600);
