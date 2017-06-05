@@ -1,4 +1,30 @@
+///////////////////////////////////////////////////
+/////////////  PIN MAPS ///////////////////////////
+///////////////////////////////////////////////////
+
+// 0 -> OUTPUT -> TCS230 (S0)
+// 1 -> OUTPUT -> TCS230 (S1)
+// 2 -> OUTPUT -> TCS230 (S2)
+// 3 -> OUTPUT -> TCS230 (S3)
+// 4 -> INPUT -> TCS230 (sensorOut)
+// 5 -> 
+// 6 -> 
+// 7 -> BT Rx
+// 8 -> BT Tx
+// 9 -> 
+// 10 -> OUTPUT -> Servo
+// 11 -> INPUT -> End Stop
+// 12 -> OUTPUT -> Direction
+// 13 -> OUTPUT -> Step
+
+///////////////////////////////////////////////////
+/////////////  END PIN MAPS ///////////////////////
+///////////////////////////////////////////////////
+
+#include <SoftwareSerial.h>
+#include <Wire.h>
 #include <Servo.h> 
+SoftwareSerial BT(7,8);
 
 #define DEBUGGING 0
 #define DELAY_DEBUG 000
@@ -7,7 +33,7 @@
 #define POTS 8
 
 //Defining servo properties
-#define SERVO_PIN 6
+#define SERVO_PIN 10
 #define LET_OUT_ANGLE 38
 #define PHOTO_ANGLE 96
 #define LET_IN_ANGLE 155
@@ -29,17 +55,17 @@
 
 // RGB led pins
 #define R_pin 5
-#define G_pin 9
-#define B_pin 11
+#define G_pin 6
+#define B_pin 9
 
 // Stepper pins and properties
-#define END_STOP_PIN 8
+#define END_STOP_PIN 11
 #define BEGIN_OFFSET 0
 #define DIRECTION_PIN 12
 #define STEP 13
 #define STEP_DELAY 1
-#define CW 0
-#define CCW 1
+#define CW 1
+#define CCW 0
 
 
 Servo myservo; 
@@ -48,7 +74,7 @@ int cur_steps;
 int new_angle=0;
 unsigned long R,G,B;
 String rgbstring;
-
+int counters[]={0,0,0,0,0,0,0,0,0};
 int sorted=0;
 /*
 class Color{
@@ -57,6 +83,8 @@ class Color{
 
 void setup() { 
   Serial.begin(57600);
+  BT.begin(9600);
+  BT.println("*LR0G0B0**A0**B0**C0**D0**E0**F0**G0**H0**I0*");
   myservo.attach(SERVO_PIN);
   myservo.write(PHOTO_ANGLE);
 
@@ -99,6 +127,7 @@ void findBeginning(){
   }
   cur_steps=0;
   angle=0;
+  Serial.println("END REACHED");
 }
 
 
@@ -207,55 +236,55 @@ void whichColorIsIt(){
     R = getRed();
     G = getGreen();
     B = getBlue();
-    /*rgb = "RGB:\t";
-    rgb += String(R) + "\t" ;
-    rgb += String(G) + "\t" ;
-    rgb += String(B) + "\t" ;
-    Serial.print(rgb);
+    /*rgbstring = "RGB:\t";
+    rgbstring += String(R) + "\t" ;
+    rgbstring += String(G) + "\t" ;
+    rgbstring += String(B) + "\t" ;
+    Serial.println(rgbstring);
     delay(100);*/
-    if (R < 29 && R > 13 && G < 29 && G > 14 && B < 30 && B > 18){
+    if (R < 24 && R > 11 && G < 29 && G > 14 && B < 33 && B > 17){
       #if DEBUGGING==1
          Serial.print("VERDE");
       #endif
       cores[0]++;
     }
 
-    else if (R < 61 && R > 31 && G < 49 && G > 30 && B < 20 && B > 14){
+    else if (R < 51 && R > 21 && G < 49 && G > 30 && B < 20 && B > 11){
       #if DEBUGGING==1
       Serial.print("AZUL MARINHO");
       #endif
       cores[1]++;
     }
 
-    else if (R < 45 && R > 30 && G < 44 && G > 24 && B < 24 && B > 11){
+    else if (R < 46 && R > 30 && G < 37 && G > 21 && B < 19 && B > 9){
       #if DEBUGGING==1
       Serial.print("AZUL CELESTE");
       #endif
       cores[2]++;
     }
 
-    else if (R < 29 && R > 7 && G < 32 && G > 5 && B < 28 && B > 6){
+    else if (R < 19 && R > 5 && G < 20 && G > 6 && B < 16 && B > 5){
       #if DEBUGGING==1
       Serial.print("VERDE TRANSPARENTE");
       #endif
       cores[3]++;
     }
 
-    else if (R < 63 && R > 39 && G < 41 && G > 27 && B < 61 && B > 40){
+    else if (R < 62 && R > 32 && G < 42 && G > 22 && B < 61 && B > 30){
       #if DEBUGGING==1
       Serial.print("ESMERALDA");
       #endif
       cores[4]++;
     }
 
-    else  if (R < 37 && R > 21 && G < 49 && G > 23 && B < 79 && B > 35){
+    else  if (R < 40 && R > 15 && G < 53 && G > 14 && B < 67 && B > 30){
       #if DEBUGGING==1
       Serial.print("VERDE AMARELADO");
       #endif
       cores[5]++;
     }
 
-    else if (R < 63 && R > 28 && G < 80 && G > 49 && B < 74 && B > 45){
+    else if (R < 66 && R > 18 && G < 87 && G > 32 && B < 80 && B > 38){
       #if DEBUGGING==1
       Serial.print("GASOLINA");
       #endif
@@ -291,57 +320,89 @@ void whichColorIsIt(){
   switch(decision){
   case 0:
     Serial.print("VERDE");
+    BT.println("*LR0G255B50*");
+    
     setRGBa(0,255,50,100);
+    counters[0]++;
+    BT.println("*B"+String(counters[0])+"*");
     setStep(25);
     break;
   case 1:
     Serial.print("AZUL MARINHO");
+    BT.println("*LR10G10B255*");
     setRGBa(10,10,255,100);
+    counters[1]++;
+    BT.println("*C"+String(counters[1])+"*");
     setStep(50);
     break;
   case 2:
     Serial.print("AZUL CELESTE");
+    BT.println("*LR140G250B255*");
     setRGBa(140,250,255,100);
+    counters[2]++;
+    BT.println("*D"+String(counters[2])+"*");
     setStep(75);
     break;
   case 3:
     Serial.print("VERDE TRANSPARENTE");
+    BT.println("*LR180G255B150*");
     setRGBa(180,255,150,100);
+    counters[3]++;
+    BT.println("*E"+String(counters[3])+"*");
     setStep(100);
     break;
   case 4:
     Serial.print("ESMERALDA");
+    BT.println("*LR0G255B20*");
     setRGBa(0,255,20,100);
+    counters[4]++;
+    BT.println("*F"+String(counters[4])+"*");
     setStep(125);
     break;
   case 5:
     Serial.print("VERDE AMARELADO");
+    BT.println("*LR130G180B0*");
     setRGBa(130,180,0,100);
+    counters[5]++;
+    BT.println("*G"+String(counters[5])+"*");
     setStep(150);
     break;
   case 6:
     Serial.print("GASOLINA");
+    BT.println("*LR255G128B0*");
     setRGBa(255,128,0,100);
+    counters[6]++;
+    BT.println("*H"+String(counters[6])+"*");
     setStep(175);
     break;
   case 7:
     Serial.print("NAO DEFINIDA");
+
+    BT.println("*LR255G0B0*");
+    BT.println("*S100*");
     setRGBa(0,0,0,0);
+    counters[7]++;
+    BT.println("*A"+String(counters[7])+"*");
     setStep(0);
     break;
   case 8:
     Serial.print("NENHUMA BOLINHA");
+    BT.println("*LR255G255B255*");
+    BT.println("*S50*");
+    counters[8]++;
+    BT.println("*I"+String(counters[8])+"*");
     setRGBa(100,100,0,100);
     break;
+    
   }
 
   Serial.println(" \n");
   delay(50);
 }
+
 int biggestIntIndex(short int values[]){
-  int biggestIntIndex = 8;
-  int mysize = POTS;
-  for(int i=0;i<mysize;i++){
+  int biggestIntIndex = POTS;
+  for(int i=0;i<POTS;i++){
     if (values[i]>values[biggestIntIndex])
       biggestIntIndex = i;
   }
@@ -352,7 +413,8 @@ void loop()
   if(isPresent()){
     sorted++;
     if(sorted==10){
-      delay(100);
+      // Let the marble out first, then go to the beginning
+      delay(200);
       findBeginning();
       sorted=0;
     }
@@ -362,8 +424,9 @@ void loop()
 
     // Check color and move the Stepper
     myservo.write(PHOTO_ANGLE);
-
+    //delay(300);
     whichColorIsIt();
+    
     //delay(PHOTO_TIME/2);
     delay(DELAY_DEBUG);
 
@@ -371,6 +434,8 @@ void loop()
     delay(LET_OUT_TIME);
     delay(DELAY_DEBUG);
   }
-  //delay(100);
+
+  //Serial.println(analogRead(LDR_DETECTOR_PIN));
 } 
+
 
